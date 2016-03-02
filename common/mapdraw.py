@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # vim:fenc=utf-8
 #
-# Copyright 漏 2015 StrayWarrior <i@straywarrior.com>
+# Copyright © 2015 StrayWarrior <i@straywarrior.com>
 #
 from mpl_toolkits.basemap import Basemap
 import matplotlib.pyplot as plt

@@ -1,4 +1,5 @@
 import geopy.distance as geodis
+import numpy
 
 # Calculate great_circle distance between two points on earth
 # x and y should have member 'lat' and 'lon'
@@ -9,6 +10,9 @@ def calculate_distance(x, y, type='km'):
     dis = geodis.great_circle((x.lat, x.lon), (y.lat, y.lon))
     return dis.km
 
+# Calculate distances between each two-point pair in the list given
+# Return:
+#   numpy.array: 2-dimension array including distances 
 def calculate_all_distances(point_list, out_filename=''):
     result = []
     for x in point_list:
@@ -24,7 +28,7 @@ def calculate_all_distances(point_list, out_filename=''):
             for line in result:
                 result_writer.writerow(line)
 
-    return result
+    return numpy.array(result)
 
 def main():
     from common.predefined_vars import PROVINCE_POINTS

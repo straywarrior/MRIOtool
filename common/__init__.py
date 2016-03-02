@@ -7,5 +7,5 @@ import matplotlib.pyplot as plt
 from scipy import stats
 
 __all__ = ["np", "pl", "sp", "Basemap"]
-__all__.extend(["mapdraw", "distance", "predefined_vars"])
+__all__.extend(["mapdraw", "geoutil", "predefined_vars"])
 

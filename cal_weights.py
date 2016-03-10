@@ -4,7 +4,6 @@
 #
 # Copyright © 2016 StrayWarrior <i@straywarrior.com>
 #
-#import common
 from common import *
 import math
 
@@ -51,7 +50,7 @@ def calculate_factors(balances, distances):
         # positive output
         if (balances[i][1] > 0):
             for j in range(0, point_num):
-                # j doesn't have input 
+                # j doesn't have input
                 if (i == j or not(balances[j][0] > 0)):
                     continue
                 distance = distances[i][j]
@@ -62,11 +61,59 @@ def calculate_factors(balances, distances):
 
     return out_weights
 
+# Balance the input-output table
+def calculate_distribution(balances, out_weights):
+    # Initial distribution
+    distribution = np.zeros(out_weights.shape)
+    row_num = len(out_weights)
+    for i in range(0, row_num):
+        distribution[i] = out_weights[i] * balances[i, 1]
+
+    # Start balance loop:
+    balanced = False
+    input_errs = np.zeros((1, row_num))
+    while (not balanced):
+        input_errs_last = np.copy(input_errs)
+        # Step 1: Sum all the rows
+        for i in range(0, row_num):
+            cur_input = np.sum(distribution[:, i])
+            real_input = balances[i, 0]
+            if (abs(real_input - 0) < 1e-6):
+                multiplier = 0
+            else:
+                multiplier = real_input / cur_input
+            distribution[:, i] = distribution[:, i] * multiplier
+            input_errs[0, i] = cur_input - real_input
+
+        input_error = np.sum(np.dot(input_errs, input_errs.transpose()))
+        if (input_error < 100):
+            balanced = True
+        else:
+            # To avoid infinite loop
+            if np.linalg.norm(input_errs - input_errs_last, 2) < 1e-6:
+                balanced = True
+        # Step 2: Sum all the columns
+        for i in range(0, row_num):
+            cur_output = np.sum(distribution[i, :])
+            real_output = balances[i, 1]
+            if (abs(real_output - 0) < 1e-6):
+                multiplier = 0
+            else:
+                multiplier = real_output / cur_output
+            distribution[i, :] = distribution[i, :] * multiplier
+    return distribution
+
 def main():
     balances = np.genfromtxt('./balances.csv', delimiter=',')
     distances = geoutil.calculate_all_distances(predefined_vars.PROVINCE_POINTS)
-    result = calculate_factors(balances, distances)
-    np.savetxt('./weights.csv', result, delimiter=",")
+    out_weights = calculate_factors(balances, distances)
+    np.savetxt('./weights.csv', out_weights, delimiter=",")
+    distribution = calculate_distribution(balances, out_weights)
+    row_num = len(distribution)
+    distribution.resize((row_num + 1), row_num)
+    distribution[row_num, :] = np.sum(distribution, axis=0)
+    np.savetxt('./transport.csv', distribution, delimiter=",")
+
 
 if __name__ == '__main__':
     main()

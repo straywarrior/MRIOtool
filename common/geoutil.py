@@ -31,7 +31,7 @@ def calculate_all_distances(point_list, out_filename=''):
     return numpy.array(result)
 
 def main():
-    from common.predefined_vars import PROVINCE_POINTS
+    from predefined_vars import PROVINCE_POINTS
 
     res = calculate_all_distances(PROVINCE_POINTS)
     print(res)

@@ -4,7 +4,7 @@
 # Copyright © 2016 StrayWarrior <i@straywarrior.com>
 #
 
-from mapdraw import ProvincePoint
+from .mapdraw import ProvincePoint
 
 beijing  = ProvincePoint(116.28, 39.54)
 shanghai = ProvincePoint(121.29, 31.14)

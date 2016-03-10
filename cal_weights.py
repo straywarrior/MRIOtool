@@ -40,7 +40,7 @@ def norm_vector(vec, twopass=False, threhold=0):
 # Params:
 #   balances:  (m x 2) matrix
 #   distances: (m x m) matrix
-def calculate_factors(balances, distances):
+def calculate_factors(balances, distances, method='gravity', method_param={}):
     point_num = len(balances)
     if (point_num != len(distances)):
         print("Point numbers are not equal.")

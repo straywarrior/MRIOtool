@@ -6,6 +6,12 @@
 #
 from common import *
 import math
+from scipy.optimize import minimize
+import logging
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)-15s %(message)s')
+
+class DimensionError(Exception):
+    pass
 
 # Gravity Model
 # F = G * m1^p1 * m2^p2 / r^pr
@@ -39,6 +45,8 @@ def norm_vector(vec, twopass=False, threhold=0):
 # Then calculate the factors
 # Params:
 #   balances:  (m x 2) matrix
+#       the 0-th column: input
+#       the 1-st column: output
 #   distances: (m x m) matrix
 def calculate_factors(balances, distances, method='gravity', method_param={}):
     point_num = len(balances)
@@ -62,13 +70,15 @@ def calculate_factors(balances, distances, method='gravity', method_param={}):
     return out_weights
 
 # Balance the input-output table
-def calculate_distribution(balances, out_weights):
+def calculate_distribution(balances, out_weights, try_conver=True):
     # Initial distribution
     distribution = np.zeros(out_weights.shape)
     row_num = len(out_weights)
     for i in range(0, row_num):
         distribution[i] = out_weights[i] * balances[i, 1]
 
+    if not try_conver:
+        return distribution
     # Start balance loop:
     balanced = False
     input_errs = np.zeros((1, row_num))
@@ -103,17 +113,78 @@ def calculate_distribution(balances, out_weights):
             distribution[i, :] = distribution[i, :] * multiplier
     return distribution
 
+# Calculate the distribution based on Optimization Method
+# Params:
+#   x: n x n matrix
+#   balances: n x 2 matrix
+#   distances: n x n matrix
+def optimize_distribution(x, balances, distances):
+    # Object: lowest x * r^2 (x is transportation between two points)
+    # Restirct: output and input balances
+    n = len(x)
+    opt_cons = opt_constraints(x, balances)
+    opt_bnds = opt_bounds(x)
+    r_vec = distances.reshape(1, -1)
+    res = minimize(opt_objective_function, x.reshape(1, -1), args=(r_vec, ),
+                   method='SLSQP',
+                   constraints=opt_cons,
+                   options={'maxiter':100, 'disp':True})
+    return res
+
+def opt_objective_function(x, arg):
+    r = arg[0]
+    if (len(x) != len(r)):
+        print("opt_objective_function: Error size, x:{0}, " \
+              "r:{1}".format(len(x), len(r)))
+        raise DimensionError()
+    total_cost = sum(x * (r * r))
+#    logging.debug('Total cost: %d', total_cost)
+    return total_cost
+
+# Generate constraints function
+# Because variables are passed in a vector in minimize(), so the index should
+# be flatten.
+# Params:
+#   x: n x n matrix
+#   b: n x 2 matrix
+
+class Func:
+    def __init__(self, x):
+        self.x = x
+    def __call__(sel):
+        print(self.x)
+def opt_constraints(x, b):
+    if (len(x) != len(b)):
+        logging.error("opt_constraints: Error size")
+        raise DimenstionError()
+    n = len(x)
+    cons = ()
+    for i in range(0, n):
+        #cons += ({'type': 'eq', 'fun': Func(i)},
+        #         {'type': 'eq', 'fun': Func(i)})
+        cons += ({'type': 'eq', 'fun': lambda x, i=i, n=n: np.sum(x[i : n * i]) - b[i, 1]},
+                 {'type': 'eq', 'fun': lambda x, i=i, n=n: np.sum(x[i : n * n : n]) - b[i, 0]})
+        pass
+    return cons
+
+def opt_bounds(x):
+    n = len(x)
+    bounds = ((0, None),) * (n * n)
+    return bounds
+
 def main():
     balances = np.genfromtxt('./balances.csv', delimiter=',')
     distances = geoutil.calculate_all_distances(predefined_vars.PROVINCE_POINTS)
     out_weights = calculate_factors(balances, distances)
     np.savetxt('./weights.csv', out_weights, delimiter=",")
-    distribution = calculate_distribution(balances, out_weights)
+    distribution = calculate_distribution(balances, out_weights, False)
+
+    print(optimize_distribution(distribution, balances, distances))
+
     row_num = len(distribution)
     distribution.resize((row_num + 1), row_num)
     distribution[row_num, :] = np.sum(distribution, axis=0)
     np.savetxt('./transport.csv', distribution, delimiter=",")
-
 
 if __name__ == '__main__':
     main()

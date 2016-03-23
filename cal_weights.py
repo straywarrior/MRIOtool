@@ -263,10 +263,10 @@ def main():
     '''
 
     balances = np.array([
-                        [365.4202, 0],
-                        [2411.9378, 100],
-                        [1281.6206, 100],
-                        [0, 4246.5823]
+                        [365, 0],
+                        [2911, 500],
+                        [1782, 500],
+                        [0, 4058]
                         ])
 
     distances = [None] * 16
@@ -304,7 +304,7 @@ def main():
     for i in range(0, 16):
         comprehensive_factors[i] = calculate_comprehensive_factor(distances[i],
                                                                   unit_costs[i])
-    zero_var_list = [0, 1, 2, 5, 10, 15]
+    zero_var_list = [0, 1, 2, 5, 10, 11, 15]
     zero_cons = gen_zero_constraints(zero_var_list)
     balance_cons = gen_constraints(balances)
     opt_cons = zero_cons + balance_cons
@@ -313,7 +313,10 @@ def main():
 
     opt_fun_str = ""
     for i in range(0, 16):
-        opt_fun_str += "x{}*{:f}+".format(i, comprehensive_factors[i])
+        #if (comprehensive_factors[i] >= 0x3f3f3f3f):
+            #continue
+        opt_fun_str += "x{}*{:3f}+".format(i, comprehensive_factors[i])
+    opt_fun_str = "min=" + opt_fun_str + "0;"
     print(opt_fun_str)
     print(gen_constraints_str(balances))
     print(gen_zero_constraints_str(zero_var_list))

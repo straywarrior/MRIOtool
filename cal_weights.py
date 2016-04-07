@@ -165,6 +165,14 @@ def opt_objective_function(x, arg):
     logging.debug('Total cost: %d', total_cost)
     return total_cost
 
+def gen_objective_function_str(c):
+    res = "min="
+    for i in range(0, len(c)):
+        res += "x{}*{:f}+".format(i, c[i])
+    res += "0;"
+    return res
+
+
 # Generate constraints function
 # Because variables are passed in a vector in minimize(), so the index should
 # be flatten.
@@ -263,10 +271,10 @@ def main():
     '''
 
     balances = np.array([
-                        [365.4202, 0],
-                        [2411.9378, 100],
-                        [1281.6206, 100],
-                        [0, 4246.5823]
+                        [365, 0],
+                        [2911, 500],
+                        [1782, 500],
+                        [0, 4058]
                         ])
 
     distances = [None] * 16
@@ -311,9 +319,7 @@ def main():
 
     zero_bounds = gen_gt_zero_bounds(16)
 
-    opt_fun_str = ""
-    for i in range(0, 16):
-        opt_fun_str += "x{}*{:f}+".format(i, comprehensive_factors[i])
+    opt_fun_str = gen_objective_function_str(comprehensive_factors)
     print(opt_fun_str)
     print(gen_constraints_str(balances))
     print(gen_zero_constraints_str(zero_var_list))

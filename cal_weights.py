@@ -312,7 +312,7 @@ def main():
     for i in range(0, 16):
         comprehensive_factors[i] = calculate_comprehensive_factor(distances[i],
                                                                   unit_costs[i])
-    zero_var_list = [0, 1, 2, 5, 10, 15]
+    zero_var_list = [0, 1, 2, 5, 10, 11, 15]
     zero_cons = gen_zero_constraints(zero_var_list)
     balance_cons = gen_constraints(balances)
     opt_cons = zero_cons + balance_cons

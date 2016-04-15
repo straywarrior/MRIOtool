@@ -8,8 +8,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 class ProvincePoint:
-    lon = 0.0
-    lat = 0.0
     def __init__(self, lon = 0.0, lat = 0.0):
         self.lon = lon
         self.lat = lat

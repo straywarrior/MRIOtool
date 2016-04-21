@@ -1,23 +1,22 @@
 from common import *
 from common.mapdraw import *
-from common.predefined_vars import *
 import random
 
 def distort_line_points(points, mode='up'):
     #distort_factor = random.randrange(1, 100) / 500
-    distort_factor = 0.05
+    distort_factor = 1
     n = len(points[0])
     m = n / 2
     if mode == 'up':
         for i in range(1, n - 1):
-            real_factor = (1 - abs(i - m) / m) * distort_factor + 1
-            #points[0][i] *= real_factor
-            points[1][i] *= real_factor
+            real_factor = (1 - abs(i - m) / m) * distort_factor
+            points[0][i] += real_factor
+            points[1][i] += real_factor
     else:
         for i in range(1, n - 1):
-            real_factor = (1 - abs(i - m) / m) * distort_factor + 1
-            #points[0][i] /= real_factor
-            points[1][i] /= real_factor
+            real_factor = (1 - abs(i - m) / m) * distort_factor
+            points[0][i] -= real_factor
+            points[1][i] -= real_factor
     return points
 
 def draw_gradient_line(maphandle, lon1, lat1, lon2, lat2, *args, point_num=500,
@@ -37,7 +36,7 @@ def draw_gradient_line(maphandle, lon1, lat1, lon2, lat2, *args, point_num=500,
 
     """
 
-def draw_gradient_line_between_province(maphandle, p1, p2, *args, **kwargs):
+def draw_gradient_line_between_point(maphandle, p1, p2, *args, **kwargs):
     draw_gradient_line(maphandle, p1.lon, p1.lat, p2.lon, p2.lat, *args,
                        **kwargs)
 
@@ -64,9 +63,9 @@ m = Basemap(llcrnrlon=73.,llcrnrlat=18.,urcrnrlon=136.,urcrnrlat=54.,
                         lat_0=18.,lon_0=73.,lat_ts=20., fix_aspect=False)
 for i in range(0, 30):
     if (np.sum(trans_data[i, :])):
-        drawpoint_on_province(m, predefined_vars.PROVINCE_POINTS[i], 'go')
+        drawpoint_on_province(m, PredefinedVars.get_province_points(i), 'go')
     else:
-        drawpoint_on_province(m, predefined_vars.PROVINCE_POINTS[i], 'ro')
+        drawpoint_on_province(m, PredefinedVars.get_province_points(i), 'ro')
 
 # draw Province-to-Province data
 for i in range(0, 30):
@@ -77,14 +76,14 @@ for i in range(0, 30):
             else:
                 dismode = 'up'
             #factor = (trans_data[i, j] - trans_min) / trans_del * 0.8 + 0.2
-            draw_gradient_line_between_province(m,
-                                                PROVINCE_POINTS[i],
-                                                PROVINCE_POINTS[j],
+            draw_gradient_line_between_point(m,
+                                                PredefinedVars.get_province_points(i),
+                                                PredefinedVars.get_province_points(j),
                                                 point_num = 500,
                                                 distort_mode = dismode)
             '''
-            drawcircle_between_provinces(m, predefined_vars.PROVINCE_POINTS[i], 
-                                         predefined_vars.PROVINCE_POINTS[j],
+            drawcircle_between_points(m, PredefinedVars.get_province_points(i), 
+                                         PredefinedVars.get_province_points(j),
                                          linw=linwidth_max * factor,
                                          linalpha=factor)
             ''' 

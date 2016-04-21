@@ -9,6 +9,8 @@ import sys
 import csv
 import re
 
+
+
 def main(argv):
     trans_lines = []
     with open(argv[1]) as network_csv:

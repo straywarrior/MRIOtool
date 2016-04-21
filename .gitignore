@@ -67,3 +67,4 @@ target/
 
 # Map files
 common/map/
+*.csv

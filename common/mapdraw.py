@@ -6,20 +6,62 @@
 from mpl_toolkits.basemap import Basemap
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 
-class ProvincePoint:
-    def __init__(self, lon = 0.0, lat = 0.0):
-        self.lon = lon
-        self.lat = lat
+class MapPoint:
+    def __init__(self, *args, **kwargs):
+        if len(args) > 0:
+            arg_type = type(args[0])
+            if arg_type == int or arg_type == float:
+                if len(args) < 2:
+                    raise TypeError()
+                else:
+                    self.lon = args[0]
+                    self.lat = args[1]
+            elif arg_type == tuple or arg_type == list:
+                self.lon = args[0][0]
+                self.lat = args[0][1]
+        else:
+            if 'lon' in kwargs:
+                self.lon = kwargs['lon']
+            if 'lat' in kwargs:
+                self.lat = kwargs['lat']
+            if 'coo' in kwargs:
+                self.lon = kwargs['coo'][0]
+                self.lat = kwargs['coo'][1]
+            else:
+                raise TypeError()
 
-def drawcircle_between_provinces(maphandle, src=ProvincePoint(0.0, 0.0),
-                                 dest=ProvincePoint(0.0, 0.0),
+class ChinaMapDraw:
+    def __init__(self):
+        self.maphandle = Basemap(llcrnrlon=73., llcrnrlat=18.,
+                                 urcrnrlon=136., urcrnrlat=54.,
+                                 rsphere=(6378137.00, 6356752.3142),
+                                 resolution='h', projection='merc',
+                                 lat_0=18.0, lon_0=73.0,
+                                 lat_ts=20., fix_aspect=False)
+        filedir = os.path.dirname(__file__)
+        self.maphandle.readshapefile(shapefile=filedir + '/map/map',
+                                     name='china', drawbounds=True,
+                                     color='k', linewidth=1, default_encoding='cp1252')
+
+    def draw_greatcircle(self, src, dest, *args, **kwargs):
+        self.maphandle.drawgreatcircle(src.lon, src.lat,
+                                       dest.lon, dest.lat,
+                                       *args, **kwargs)
+    
+    def draw_point(self, point, *args, **kwargs):
+        self.maphandle.plot(point.lon, point.lat, *args, latlon=True, **kwargs)
+
+
+def drawcircle_between_provinces(maphandle, src=MapPoint(0.0, 0.0),
+                                 dest=MapPoint(0.0, 0.0),
                                  linw=2, lincolor='b', linalpha=1.0):
     maphandle.drawgreatcircle(src.lon, src.lat, dest.lon, dest.lat,
                              linewidth=linw, color=lincolor, del_s=50.0,
                              alpha=linalpha)
 
-def drawpoint_on_province(maphandle, dest=ProvincePoint(0.0, 0.0), *args,
+def drawpoint_on_province(maphandle, dest=MapPoint(0.0, 0.0), *args,
                           **kwargs):
     #maphandle.plot(dest.lon, dest.lat, *args, **kwargs)
     maphandle.plot(dest.lon, dest.lat, *args, latlon=True, **kwargs)

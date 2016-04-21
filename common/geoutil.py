@@ -1,9 +1,10 @@
 import geopy.distance as geodis
 import numpy
+import csv
 
 # Calculate great_circle distance between two points on earth
 # x and y should have member 'lat' and 'lon'
-# For example, x and y can be instances of class ProvincePoint
+# For example, x and y can be instances of class MapPoint
 # Return:
 #   double: distance in kilometers.
 def calculate_distance(x, y, type='km'):
@@ -33,7 +34,7 @@ def calculate_all_distances(point_list, out_filename=''):
 def main():
     from predefined_vars import PROVINCE_POINTS
 
-    res = calculate_all_distances(PROVINCE_POINTS)
+    res = calculate_all_distances(PROVINCE_POINTS, 'province_distances.csv')
     print(res)
 
 if __name__ == '__main__':

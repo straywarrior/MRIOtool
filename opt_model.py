@@ -9,6 +9,8 @@ import csv
 import math
 from scipy.optimize import linprog 
 import logging
+import sys
+
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)-15s %(message)s')
 
 class DimensionError(Exception):
@@ -210,13 +212,14 @@ def read_cost_fromtxt(filename, n=0):
             i += 1
     return unit_costs
 
-def main():
+def main(argv):
     POINT_NUM = 30
     VAR_NUM = POINT_NUM ** 2
 
-    balances = np.genfromtxt('balances.csv', delimiter=',')
+    src_filename = argv[1]
+    res_filename = argv[2]
 
-#    supply_and_demand = np.genfromtxt('csj_supply_and_demand.csv', delimiter=',')
+    balances = np.genfromtxt(src_filename, delimiter=',')
 
     skip_line = 2
     # Pre-process the distance file
@@ -263,41 +266,18 @@ def main():
         comprehensive_factors[i] = calculate_comprehensive_factor(distances[i],
                                                                   unit_costs[i])
     np.savetxt('comprehensive_factors.csv', comprehensive_factors, delimiter=',')
-    #zero_var_list = [0, 1, 2, 5, 10, 15]
-    """
-    zero_cons = gen_zero_constraints(zero_var_list)
-    balance_cons = gen_constraints(balances)
-    opt_cons = zero_cons + balance_cons
-
-    zero_bounds = gen_gt_zero_bounds(VAR_NUM)
-
-    opt_fun_str = gen_objective_function_str(comprehensive_factors)
-    print(opt_fun_str)
-    print(gen_constraints_str(balances))
-    print(gen_zero_constraints_str(zero_var_list))
-
-    """
-
-#    comprehensive_factors = comprehensive_factors.reshape(-1, 16)
 
     opt_eq = gen_eq_constraints_mat(balances, 'total')
     opt_A_eq = opt_eq['A']
     opt_b_eq = opt_eq['b']
-    """
-    supply = supply_and_demand[:, [0]]
-    demand = supply_and_demand[:, [1]]
-    opt_ub = gen_ub_constraints_mat(supply, demand)
-    opt_A_ub = opt_ub['A']
-    opt_b_ub = opt_ub['b']
-    """
 
     opt_result = linprog(comprehensive_factors,
                          A_eq=opt_A_eq,
                          b_eq=opt_b_eq)
-    #print(opt_result)
-    np.savetxt('opt_result.csv', opt_result.x.reshape(POINT_NUM, POINT_NUM),
+
+    np.savetxt(res_filename, opt_result.x.reshape(POINT_NUM, POINT_NUM),
                delimiter=',')
     
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv)

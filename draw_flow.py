@@ -41,57 +41,58 @@ def draw_gradient_line_between_point(maphandle, p1, p2, *args, **kwargs):
                        **kwargs)
 
 
-# read data
-trans_data = np.genfromtxt('./opt_result.csv', delimiter=',')
-trans_max = np.max(trans_data)
-trans_min = trans_max
-for i in range(0, 30):
-    for j in range(0, 30):
-        cur = trans_data[i, j]
-        if ( np.abs(cur - 0) > 1e-6 and cur < trans_min ):
-            trans_min = cur
-trans_del = trans_max - trans_min
-linwidth_max = 3
+def main():
+    # read data
+    trans_data = np.genfromtxt('./opt_result.csv', delimiter=',')
+    trans_max = np.max(trans_data)
+    trans_min = trans_max
+    for i in range(0, 30):
+        for j in range(0, 30):
+            cur = trans_data[i, j]
+            if ( np.abs(cur - 0) > 1e-6 and cur < trans_min ):
+                trans_min = cur
+    trans_del = trans_max - trans_min
+    linwidth_max = 3
 
-# create new figure, axes instances.
-fig=plt.figure()
-ax=fig.add_axes([0.1,0.1,0.8,0.8])
-# setup mercator map projection.
-m = Basemap(llcrnrlon=73.,llcrnrlat=18.,urcrnrlon=136.,urcrnrlat=54.,
-                        rsphere=(6378137.00,6356752.3142),
-                        resolution='h',projection='merc',
-                        lat_0=18.,lon_0=73.,lat_ts=20., fix_aspect=False)
-for i in range(0, 30):
-    if (np.sum(trans_data[i, :])):
-        drawpoint_on_province(m, PredefinedVars.get_province_points(i), 'go')
-    else:
-        drawpoint_on_province(m, PredefinedVars.get_province_points(i), 'ro')
+    # create new figure, axes instances.
+    fig=plt.figure()
+    ax=fig.add_axes([0.1,0.1,0.8,0.8])
+    # setup mercator map projection.
+    m = Basemap(llcrnrlon=73.,llcrnrlat=18.,urcrnrlon=136.,urcrnrlat=54.,
+                            rsphere=(6378137.00,6356752.3142),
+                            resolution='h',projection='merc',
+                            lat_0=18.,lon_0=73.,lat_ts=20., fix_aspect=False)
+    for i in range(0, 30):
+        if (np.sum(trans_data[i, :])):
+            drawpoint_on_province(m, PredefinedVars.get_province_points(i), 'go')
+        else:
+            drawpoint_on_province(m, PredefinedVars.get_province_points(i), 'ro')
 
-# draw Province-to-Province data
-for i in range(0, 30):
-    for j in range(0, 30):
-        if (trans_data[i, j] >= trans_min and i != j):
-            if j > i:
-                dismode = 'down'
-            else:
-                dismode = 'up'
-            #factor = (trans_data[i, j] - trans_min) / trans_del * 0.8 + 0.2
-            draw_gradient_line_between_point(m,
-                                                PredefinedVars.get_province_points(i),
-                                                PredefinedVars.get_province_points(j),
-                                                point_num = 500,
-                                                distort_mode = dismode)
-            '''
-            drawcircle_between_points(m, PredefinedVars.get_province_points(i), 
-                                         PredefinedVars.get_province_points(j),
-                                         linw=linwidth_max * factor,
-                                         linalpha=factor)
-            ''' 
+    # draw Province-to-Province data
+    for i in range(0, 30):
+        for j in range(0, 30):
+            if (trans_data[i, j] >= trans_min and i != j):
+                if j > i:
+                    dismode = 'down'
+                else:
+                    dismode = 'up'
+                #factor = (trans_data[i, j] - trans_min) / trans_del * 0.8 + 0.2
+                draw_gradient_line_between_point(m,
+                                                    PredefinedVars.get_province_points(i),
+                                                    PredefinedVars.get_province_points(j),
+                                                    point_num = 500,
+                                                    distort_mode = dismode)
+                '''
+                drawcircle_between_points(m, PredefinedVars.get_province_points(i), 
+                                             PredefinedVars.get_province_points(j),
+                                             linw=linwidth_max * factor,
+                                             linalpha=factor)
+                ''' 
 
-m.readshapefile(shapefile='./common/map/map',
-                name='china', drawbounds=True, color='k', linewidth=1, default_encoding='cp1252')
-# draw parallels
-# m.drawparallels(np.arange(10,90,20),labels=[1,1,0,1])
-# draw meridians
-# m.drawmeridians(np.arange(-180,180,30),labels=[1,1,0,1])
-plt.show()
+    m.readshapefile(shapefile='./common/map/map',
+                    name='china', drawbounds=True, color='k', linewidth=1, default_encoding='cp1252')
+    plt.show()
+
+
+if __name__ == '__main__':
+    main()

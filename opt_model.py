@@ -223,12 +223,12 @@ def main(argv):
 
     skip_line = 2
     # Pre-process the distance file
-    with open('nation_network.csv', 'r') as network_file:
+    with open('data/nation_network.csv', 'r') as network_file:
         network_reader = csv.reader(network_file, delimiter=',')
         i = 0
-        distance_file = open('nation_distance.csv', 'w')
+        distance_file = open('data/nation_distance.csv', 'w')
         distance_writer = csv.writer(distance_file, delimiter=',')
-        cost_file = open('nation_cost.csv', 'w')
+        cost_file = open('data/nation_cost.csv', 'w')
         cost_writer = csv.writer(cost_file, delimiter=',')
 
         for row in network_reader:
@@ -252,20 +252,20 @@ def main(argv):
         cost_file.close()
 
     distances = [None] * VAR_NUM
-    with open('nation_distance.csv') as distance_file:
+    with open('data/nation_distance.csv') as distance_file:
         distance_reader = csv.reader(distance_file, delimiter=',')
         i = 0
         for distance_row in distance_reader:
             distances[i] = np.array(distance_row, np.float64)
             i += 1
 
-    unit_costs = read_cost_fromtxt('nation_cost.csv', VAR_NUM)
+    unit_costs = read_cost_fromtxt('data/nation_cost.csv', VAR_NUM)
 
     comprehensive_factors = np.zeros(VAR_NUM, dtype=np.float64)
     for i in range(0, VAR_NUM):
         comprehensive_factors[i] = calculate_comprehensive_factor(distances[i],
                                                                   unit_costs[i])
-    np.savetxt('comprehensive_factors.csv', comprehensive_factors, delimiter=',')
+    np.savetxt('data/comprehensive_factors.csv', comprehensive_factors, delimiter=',')
 
     opt_eq = gen_eq_constraints_mat(balances, 'total')
     opt_A_eq = opt_eq['A']

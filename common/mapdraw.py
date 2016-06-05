@@ -7,6 +7,8 @@ from mpl_toolkits.basemap import Basemap
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+from . import geoutil
+import scipy.interpolate
 
 class MapPoint:
     def __init__(self, *args, **kwargs):
@@ -32,18 +34,34 @@ class MapPoint:
             else:
                 raise TypeError()
 
+
+def distort_line_points(points, mode='up', max_bias=1):
+    if mode == 'up':
+        points[0][1] -= max_bias
+        points[1][1] += max_bias
+        p_array = np.array(points)
+        interp_f = scipy.interpolate.interp1d(p_array[0, :], p_array[1, :], kind='quadratic')
+    else:
+        points[0][1] += max_bias
+        points[1][1] -= max_bias
+        p_array = np.array(points)
+        interp_f = scipy.interpolate.interp1d(p_array[0, :], p_array[1, :], kind='quadratic')
+    new_x = np.linspace(points[0][0], points[0][2], 500)
+    new_y = interp_f(new_x)
+    return (new_x, new_y)
+
 class ChinaMapDraw:
     def __init__(self):
         self.maphandle = Basemap(llcrnrlon=73., llcrnrlat=18.,
                                  urcrnrlon=136., urcrnrlat=54.,
                                  rsphere=(6378137.00, 6356752.3142),
-                                 resolution='h', projection='merc',
+                                 resolution='l', projection='merc',
                                  lat_0=18.0, lon_0=73.0,
                                  lat_ts=20., fix_aspect=False)
         filedir = os.path.dirname(__file__)
         self.maphandle.readshapefile(shapefile=filedir + '/map/map',
                                      name='china', drawbounds=True,
-                                     color='k', linewidth=1, default_encoding='cp1252')
+                                     color='k', linewidth=0.5, default_encoding='cp1252')
 
     def draw_greatcircle(self, src, dest, *args, **kwargs):
         self.maphandle.drawgreatcircle(src.lon, src.lat,
@@ -53,7 +71,15 @@ class ChinaMapDraw:
     def draw_point(self, point, *args, **kwargs):
         self.maphandle.plot(point.lon, point.lat, *args, latlon=True, **kwargs)
 
+    def draw_random_arc(self, src, dest, *args, point_num=500, **kwargs):
+        points = self.maphandle.gcpoints(src.lon, src.lat, dest.lon, dest.lat, 3)
+        distance = geoutil.calculate_distance(src, dest)
+        points = distort_line_points(points, max_bias = 50000.0 * distance / 1000)
+        #self.maphandle.plot(points[0], points[1], *args, latlon=True, linestyle='-', **kwargs)
+        self.maphandle.plot(points[0], points[1], *args, linestyle='-', **kwargs)
 
+
+# Backport to old codes
 def drawcircle_between_provinces(maphandle, src=MapPoint(0.0, 0.0),
                                  dest=MapPoint(0.0, 0.0),
                                  linw=2, lincolor='b', linalpha=1.0):

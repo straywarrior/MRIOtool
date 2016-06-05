@@ -22,9 +22,7 @@ def distort_line_points(points, mode='up'):
 def draw_gradient_line(maphandle, lon1, lat1, lon2, lat2, *args, point_num=500,
                        distort_mode='up', **kwargs):
     points = maphandle.gcpoints(lon1, lat1, lon2, lat2, point_num)
-    print(points[0][5])
     points = distort_line_points(points, distort_mode)
-    print(points[0][5])
     maphandle.plot(points[0], points[1], 'b-')
     """
     for i in range(0, point_num):
@@ -60,7 +58,7 @@ def main():
     # setup mercator map projection.
     m = Basemap(llcrnrlon=73.,llcrnrlat=18.,urcrnrlon=136.,urcrnrlat=54.,
                             rsphere=(6378137.00,6356752.3142),
-                            resolution='h',projection='merc',
+                            resolution='i',projection='merc',
                             lat_0=18.,lon_0=73.,lat_ts=20., fix_aspect=False)
     for i in range(0, 30):
         if (np.sum(trans_data[i, :])):
